@@ -1,4 +1,5 @@
 #Given string S and dictionary dict, check if S is made of substrings of the dictionary words.
+#Algorithm explained in picures directory
 
 def findWords(dict, s):
     list_length = []
@@ -27,7 +28,6 @@ for letter in range(ord('a'),ord('z')+1):
     dict.append(chr(letter))
 print(findWords(dict,"oposum"))
 
-![GitHub Logo](/pictures/Ex4Q2.PNG)
 
                 
     
