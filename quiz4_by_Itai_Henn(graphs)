@@ -1,0 +1,505 @@
+# # written and collect by Itai Henn
+# Python3 program for the above approach
+
+import copy
+# finding  the negative cycles
+# Structure to represent a weighted
+# edge in graph
+class Edge:
+    def __init__(self):
+        self.src = 0
+        self.dest = 0
+        self.weight = 0
+
+
+# Structure to represent a directed
+# and weighted graph
+class Graph:
+
+    def __init__(self):
+        # V. Number of vertices, E.
+        # Number of edges
+        self.V = 0
+        self.E = 0
+
+        # Graph is represented as
+        # an array of edges.
+        self.edge = []
+
+
+# Creates a new graph with V vertices
+# and E edges
+def createGraph(V, E):
+    graph = Graph();
+    graph.V = V;
+    graph.E = E;
+    graph.edge = [Edge() for i in range(graph.E)]
+    return graph;
+
+
+# Function runs Bellman-Ford algorithm
+# and prints negative cycle(if present)
+def NegCycleBellmanFord(graph, src):
+    V = graph.V;
+    E = graph.E;
+    dist = [1000000 for i in range(V)]
+    parent = [-1 for i in range(V)]
+    dist[src] = 0;
+
+    # Relax all edges |V| - 1 times.
+    for i in range(1, V):
+        for j in range(E):
+
+            u = graph.edge[j].src;
+            v = graph.edge[j].dest;
+            weight = graph.edge[j].weight;
+
+            if (dist[u] != 1000000 and
+                    dist[u] + weight < dist[v]):
+                dist[v] = dist[u] + weight;
+                parent[v] = u;
+
+    # Check for negative-weight cycles
+    C = -1;
+    for i in range(E):
+        u = graph.edge[i].src;
+        v = graph.edge[i].dest;
+        weight = graph.edge[i].weight;
+
+        if (dist[u] != 1000000 and
+                dist[u] + weight < dist[v]):
+            # Store one of the vertex of
+            # the negative weight cycle
+            C = v;
+            break;
+
+    if (C != -1):
+        for i in range(V):
+            C = parent[C];
+
+        # To store the cycle vertex
+        cycle = []
+        v = C
+
+        while (True):
+            cycle.append(v)
+            if (v == C and len(cycle) > 1):
+                break;
+            v = parent[v]
+
+        # Reverse cycle[]
+        cycle.reverse()
+
+        # Printing the negative cycle number ov vertexes
+        print("********* ex. negative cycles *******")
+        print("the num of v in the cycle is: ",len(cycle)-1)
+        print("\nthe cycle is :")
+        for v in cycle:
+            print(v, end=" ");
+        print()
+    else:
+        print(0 + " no cycles");
+
+
+# Driver Code
+if __name__ == '__main__':
+    # Number of vertices in graph
+    V = 4;
+
+    # Number of edges in graph
+    E = 4;
+    graph = createGraph(V, E);
+
+    # Given Graph
+    matrix = [[0,1,0,0],[0,0,-1,0],[0,0,0,-1],[-1,0,0,0]]
+    counter = 0 # counting edges
+    for i in range(0,V):
+        for j in range(0,V):
+            #checking if we set already all the vertexes
+            if counter == E:
+                break;
+            if matrix[i][j]!=0:
+                graph.edge[counter].src=i;
+                graph.edge[counter].dest = j;
+                graph.edge[counter].weight = matrix[i][j];
+                counter=counter+1;
+
+    # Function Call
+    NegCycleBellmanFord(graph, 0);
+    '''
+    graph.edge[0].src = 1;
+    graph.edge[0].dest = 0;
+    graph.edge[0].weight = 1;
+
+    graph.edge[1].src = 2
+    graph.edge[1].dest = 1;
+    graph.edge[1].weight = -1;
+
+    graph.edge[2].src = 3;
+    graph.edge[2].dest = 2;
+    graph.edge[2].weight = -1;
+
+    graph.edge[3].src = 0;
+    graph.edge[3].dest = 3;
+    graph.edge[3].weight = -1;
+
+    # Function Call
+    NegCycleBellmanFord(graph, 0);'''
+# This code is contributed by Pratham76
+
+
+#finding the min cut max flow of electric network
+
+# Python program for finding min-cut in the given graph
+# Complexity : (E*(V^3))
+# Total augmenting path = VE and BFS
+# with adj matrix takes :V^2 times
+
+from collections import defaultdict
+
+
+# This class represents a directed graph
+# using adjacency matrix representation
+class Graph:
+
+    def __init__(self, graph):
+        self.graph = graph  # residual graph
+        self.org_graph = [i[:] for i in graph]
+        self.ROW = len(graph)
+        self.COL = len(graph[0])
+
+    '''Returns true if there is a path from 
+    source 's' to sink 't' in 
+    residual graph. Also fills 
+    parent[] to store the path '''
+
+    def BFS(self, s, t, parent):
+
+        # Mark all the vertices as not visited
+        visited = [False] * (self.ROW)
+
+        # Create a queue for BFS
+        queue = []
+
+        # Mark the source node as visited and enqueue it
+        queue.append(s)
+        visited[s] = True
+
+        # Standard BFS Loop
+        while queue:
+
+            # Dequeue a vertex from queue and print it
+            u = queue.pop(0)
+
+            # Get all adjacent vertices of
+            # the dequeued vertex u
+            # If a adjacent has not been
+            # visited, then mark it
+            # visited and enqueue it
+            for ind, val in enumerate(self.graph[u]):
+                if visited[ind] == False and val > 0:
+                    queue.append(ind)
+                    visited[ind] = True
+                    parent[ind] = u
+
+                    # If we reached sink in BFS starting
+        # from source, then return
+        # true, else false
+        return True if visited[t] else False
+
+    # Function for Depth first search
+    # Traversal of the graph
+    def dfs(self, graph, s, visited):
+        visited[s] = True
+        for i in range(len(graph)):
+            if graph[s][i] > 0 and not visited[i]:
+                self.dfs(graph, i, visited)
+
+    # Returns the min-cut of the given graph
+    def minCut(self, source, sink):
+
+        # This array is filled by BFS and to store path
+        parent = [-1] * (self.ROW)
+
+        max_flow = 0  # There is no flow initially
+
+        # Augment the flow while there is path from source to sink
+        while self.BFS(source, sink, parent):
+
+            # Find minimum residual capacity of the edges along the
+            # path filled by BFS. Or we can say find the maximum flow
+            # through the path found.
+            path_flow = float("Inf")
+            s = sink
+            while (s != source):
+                path_flow = min(path_flow, self.graph[parent[s]][s])
+                s = parent[s]
+
+                # Add path flow to overall flow
+            max_flow += path_flow
+
+            # update residual capacities of the edges and reverse edges
+            # along the path
+            v = sink
+            while (v != source):
+                u = parent[v]
+                self.graph[u][v] -= path_flow
+                self.graph[v][u] += path_flow
+                v = parent[v]
+
+        visited = len(self.graph) * [False]
+        self.dfs(self.graph, s, visited)
+
+        # print the edges which initially had weights
+        # but now have 0 weight
+        min_cutes_v = []
+        for i in range(self.ROW):
+            for j in range(self.COL):
+                if self.graph[i][j] == 0 and \
+                        self.org_graph[i][j] > 0 and visited[i]:
+                    print
+                    str(i) + " - " + str(j)
+                    min_cutes_v.append([i,j])
+        return min_cutes_v
+
+    def BFS_F(self, s, t, parent):
+
+        # Mark all the vertices as not visited
+        visited = [False] * (self.ROW)
+
+        # Create a queue for BFS
+        queue = []
+
+        # Mark the source node as visited and enqueue it
+        queue.append(s)
+        visited[s] = True
+
+        # Standard BFS Loop
+        while queue:
+
+        # Dequeue a vertex from queue and print it
+            u = queue.pop(0)
+
+        # Get all adjacent vertices of the dequeued vertex u
+        # If a adjacent has not been visited, then mark it
+        # visited and enqueue it
+            for ind, val in enumerate(self.graph[u]):
+                 if visited[ind] == False and val > 0:
+                    # If we find a connection to the sink node,
+                    # then there is no point in BFS anymore
+                    # We just have to set its parent and can return true
+                    queue.append(ind)
+                    visited[ind] = True
+                    parent[ind] = u
+                    if ind == t:
+                        return True
+
+        # We didn't reach sink in BFS starting
+        # from source, so return false
+        return False
+
+    def FordFulkerson(self, source, sink):
+
+        # This array is filled by BFS and to store path
+        parent = [-1] * (self.ROW)
+
+        max_flow = 0  # There is no flow initially
+
+        # Augment the flow while there is path from source to sink
+        while self.BFS_F(source, sink, parent):
+
+            # Find minimum residual capacity of the edges along the
+            # path filled by BFS. Or we can say find the maximum flow
+            # through the path found.
+            path_flow = float("Inf")
+            s = sink
+            while (s != source):
+                path_flow = min(path_flow, self.graph[parent[s]][s])
+                s = parent[s]
+
+            # Add path flow to overall flow
+            max_flow += path_flow
+
+            # update residual capacities of the edges and reverse edges
+            # along the path
+            v = sink
+            while (v != source):
+                u = parent[v]
+                self.graph[u][v] -= path_flow
+                self.graph[v][u] += path_flow
+                v = parent[v]
+
+        return max_flow
+
+#copy paste the table of the of graph
+graph = [[0, 16, 13, 0, 0, 0],
+         [0, 0, 10, 12, 0, 0],
+         [0, 4, 0, 0, 14, 0],
+         [0, 0, 9, 0, 0, 20],
+         [0, 0, 0, 7, 0, 4],
+         [0, 0, 0, 0, 0, 0]]
+#update the source and the sink (t)
+source = 0;
+sink = 5
+new_cable = 52
+
+graph_copy = copy.deepcopy(graph)
+g = Graph(graph_copy)
+
+
+min_cutes_v = g.minCut(source, sink)
+print("********* ex. max flow *******")
+print("the min cut is: ", min_cutes_v)
+graph_copy = copy.deepcopy(graph)
+g = Graph(graph_copy)
+print("original max flow= ",g.FordFulkerson(source,sink))
+
+#chcking the minum max flow option
+min_max_flow = []
+for i in range(0,len(min_cutes_v)):
+    graph_copy = copy.deepcopy(graph)
+    #replacing each time another min cut
+    index_i = min_cutes_v[i][0]
+    index_j = min_cutes_v[i][1]
+    graph_copy[index_i][index_j]=new_cable
+    g = Graph(graph_copy)
+    min_max_flow.append(g.FordFulkerson(source,sink))
+
+print(min_max_flow)
+#finding min flow
+minimum = min_max_flow[0]
+for i in range(0,len(min_max_flow)):
+    if minimum >min_max_flow[i]:
+        minimum =min_max_flow[i]
+print("the minimum max flow for G_fixed= ", minimum)
+# This code is contributed by Neelam Yadav
+
+
+
+# cities distances problem
+print("********* ex. cities distances *******")
+# Minimum Spanning Tree of a given connected,
+# undirected and weighted graph
+from collections import defaultdict
+
+# Class to represent a graph
+class Graph:
+
+    def __init__(self, vertices):
+        self.V = vertices  # No. of vertices
+        self.graph = []  # default dictionary
+        # to store graph
+
+    # function to add an edge to graph
+    def addEdge(self, u, v, w):
+        self.graph.append([u, v, w])
+
+    # A utility function to find set of an element i
+    # (uses path compression technique)
+    def find(self, parent, i):
+        if parent[i] == i:
+            return i
+        return self.find(parent, parent[i])
+
+    # A function that does union of two sets of x and y
+    # (uses union by rank)
+    def union(self, parent, rank, x, y):
+        xroot = self.find(parent, x)
+        yroot = self.find(parent, y)
+
+        # Attach smaller rank tree under root of
+        # high rank tree (Union by Rank)
+        if rank[xroot] < rank[yroot]:
+            parent[xroot] = yroot
+        elif rank[xroot] > rank[yroot]:
+            parent[yroot] = xroot
+
+        # If ranks are same, then make one as root
+        # and increment its rank by one
+        else:
+            parent[yroot] = xroot
+            rank[xroot] += 1
+
+    # The main function to construct MST using Kruskal's
+    # algorithm
+    def KruskalMST(self, cities):
+
+        result = []  # This will store the resultant MST
+
+        # An index variable, used for sorted edges
+        i = 0
+
+        # An index variable, used for result[]
+        e = 0
+
+        # Step 1:  Sort all the edges in
+        # non-decreasing order of their
+        # weight.  If we are not allowed to change the
+        # given graph, we can create a copy of graph
+        self.graph = sorted(self.graph,
+                            key=lambda item: item[2])
+
+        parent = []
+        rank = []
+
+        # Create V subsets with single elements
+        for node in range(self.V):
+            parent.append(node)
+            rank.append(0)
+
+        # Number of edges to be taken is equal to V-1
+        while e < self.V - 1:
+
+            # Step 2: Pick the smallest edge and increment
+            # the index for next iteration
+            u, v, w = self.graph[i]
+            i = i + 1
+            x = self.find(parent, u)
+            y = self.find(parent, v)
+
+            # If including this edge does't
+            #  cause cycle, include it in result
+            #  and increment the indexof result
+            # for next edge
+            if x != y:
+                e = e + 1
+                result.append([u, v, w])
+                self.union(parent, rank, x, y)
+            # Else discard the edge
+
+        minimumCost = 0
+        print()
+        print("Welcome abord, our road trip map is:")
+        for u, v, weight in result:
+            minimumCost += weight
+            print("%s (%d)-> %s (%d) == %d" % (cities[u],u,cities[v], v, weight))
+        print()
+        print("Minimum one-way road", minimumCost)
+        print("Minimum round-trip road", minimumCost*2)
+
+
+
+# Driver code
+matrix = [ [0, 2, 0, 6, 0],
+            [2, 0, 3, 8, 5],
+            [0, 3, 0, 0, 7],
+            [6, 8, 0, 0, 9],
+            [0, 5, 7, 9, 0]]
+cities= ["london","nicosia","tel-aviv","Holon","Herzelia"]
+v = 5
+g = Graph(v)
+#set the ne edges by the matrix
+for i in range(0,v):
+    for j in range(0,v):
+        if matrix[i][j]!=0:
+            g.addEdge(i, j, matrix[i][j])
+'''
+g.addEdge(0, 2, 6)
+g.addEdge(0, 3, 5)
+g.addEdge(1, 3, 15)
+g.addEdge(2, 3, 4)
+'''
+# Function call
+g.KruskalMST(cities)
+
+# This code is contributed by Neelam Yadav
