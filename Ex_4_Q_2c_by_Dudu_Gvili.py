@@ -4,7 +4,6 @@
 def findWords(dict, s):
     list_length = []
     for word in dict:
-        word_length = len(word)
         if not word_length in list_length and word_length <= len(s):
             list_length.append(word_length)
     # O(n)
